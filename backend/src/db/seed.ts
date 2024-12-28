@@ -1,4 +1,5 @@
 import { Medication } from "../types/medication";
+import { Prescription } from "../types/prescription";
 
 export const MEDICATIONS_TO_SEED: Medication[] = [
   { medName: "Amoxicillin", dosage: "500mg", frequency: "Every 8 hours" },
@@ -19,4 +20,9 @@ export const MEDICATIONS_TO_SEED: Medication[] = [
   { medName: "Amlodipine", dosage: "5mg", frequency: "Once daily" },
   { medName: "Metoprolol", dosage: "25mg", frequency: "Twice daily" },
   { medName: "Gabapentin", dosage: "300mg", frequency: "Three times daily" },
+];
+
+export const PRESCRIPTIONS_TO_SEED: Prescription[] = [
+  { medicationId: 1, dosage: "500mg", frequency: "Every 8 hours" },
+  { medicationId: 2, dosage: "10mg", frequency: "Once daily" },
 ];
