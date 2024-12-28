@@ -1,9 +1,11 @@
 import express from "express";
-import { db } from "../db/init";
-import { MCPServer } from "../mcp/MCPServer";
+import { db } from "../db/init.js";
+import { MCPServer } from "../mcp/MCPServer.js";
+import { MedicationMCPServer } from "../mcp/MedicationMCPServer.js";
 
 export const apiRouter = express.Router();
 const mcpServer = new MCPServer();
+const medicationServer = new MedicationMCPServer(); // Instantiating to see if we error out when using the @modelcontextprotocol/sdk library
 
 // Health Check
 apiRouter.get("/", async (req, res) => {

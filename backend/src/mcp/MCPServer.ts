@@ -1,5 +1,5 @@
-import { db } from "../db/init";
-import { OllamaService } from "../llm/OllamaService";
+import { db } from "../db/init.js";
+import { OllamaService } from "../llm/OllamaService.js";
 
 /**
  The hope is that in the future, this will be converted into an actual Model Context Protocol (MCP) server. Not for clean code or simplicity sakes. But just to learn.

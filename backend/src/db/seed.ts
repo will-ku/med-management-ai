@@ -1,5 +1,5 @@
-import { Medication } from "../types/medication";
-import { Prescription } from "../types/prescription";
+import { Medication } from "../types/medication.js";
+import { Prescription } from "../types/prescription.js";
 
 export const MEDICATIONS_TO_SEED: Medication[] = [
   { medName: "Amoxicillin", dosage: "500mg", frequency: "Every 8 hours" },

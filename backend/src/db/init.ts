@@ -1,5 +1,5 @@
 import sqlite3 from "sqlite3";
-import { MEDICATIONS_TO_SEED } from "./seed";
+import { MEDICATIONS_TO_SEED } from "./seed.js";
 
 export const db = new sqlite3.Database("./data/med_management.db");
 
