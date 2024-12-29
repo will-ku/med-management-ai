@@ -4,8 +4,9 @@ import { MCPServer } from "../mcp/MCPServer.js";
 import { MedicationMCPServer } from "../mcp/MedicationMCPServer.js";
 
 export const apiRouter = express.Router();
+
+// Faux MCP server -- will be removed. Real MCP server will be instantiated in server.ts
 const mcpServer = new MCPServer();
-const medicationServer = new MedicationMCPServer(); // Instantiating to see if we error out when using the @modelcontextprotocol/sdk library
 
 // Health Check
 apiRouter.get("/", async (req, res) => {
