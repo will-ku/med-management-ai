@@ -183,6 +183,5 @@ export class MedicationMCPServer {
   }
 }
 
-// Comment out, unless debugging with MCP Inspector Tool
 const server = new MedicationMCPServer();
 server.run().catch(console.error);

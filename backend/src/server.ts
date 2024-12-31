@@ -3,26 +3,30 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { apiRouter } from "./api/routes.js";
 import { initializeDatabase } from "./db/init.js";
-import { MedicationMCPServer } from "./mcp/MedicationMCPServer.js";
+import { MCPClient } from "./mcp/client.js";
 
-dotenv.config();
+main().catch((err) => console.error(err));
 
-// Instantiate Medication MCP server
-const medicationServer = new MedicationMCPServer();
-medicationServer.run().catch((err) => console.error(err));
+async function main() {
+  dotenv.config();
 
-// // Initialize database
-initializeDatabase();
+  initializeDatabase();
+  await initializeMCPClient();
 
-// Instantiate Express API Server
-const app = express();
-const port = process.env.PORT || 3000;
+  const app = express();
+  const port = process.env.PORT || 3000;
 
-app.use(cors());
-app.use(express.json());
+  app.use(cors());
+  app.use(express.json());
 
-app.use("/api", apiRouter);
+  app.use("/api", apiRouter);
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+}
+
+async function initializeMCPClient() {
+  const client = new MCPClient();
+  await client.initialize();
+}

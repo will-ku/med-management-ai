@@ -1,12 +1,7 @@
 import express from "express";
 import { db } from "../db/init.js";
-import { MCPServer } from "../mcp/MCPServer.js";
-import { MedicationMCPServer } from "../mcp/MedicationMCPServer.js";
 
 export const apiRouter = express.Router();
-
-// Faux MCP server -- will be removed. Real MCP server will be instantiated in server.ts
-const mcpServer = new MCPServer();
 
 // Health Check
 apiRouter.get("/", async (req, res) => {
@@ -17,8 +12,7 @@ apiRouter.get("/", async (req, res) => {
 apiRouter.post("/query", async (req, res) => {
   try {
     const { query } = req.body;
-    const result = await mcpServer.processQuery(query);
-    res.json(result);
+    res.json({ message: "Hello, world!" });
   } catch (error: unknown) {
     if (error instanceof Error) {
       res.status(500).json({ error: error.message }); // TODO: Handle error codes correctly
