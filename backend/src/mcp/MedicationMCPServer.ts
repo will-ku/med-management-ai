@@ -7,13 +7,17 @@ import {
   CallToolRequestSchema,
   ErrorCode,
   McpError,
+  ListResourcesRequestSchema,
+  ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
+import sqlite from "sqlite3";
 import { TOOL } from "./constants.js";
+import { PrescriptionService } from "../services/PrescriptionService.js";
 
 export class MedicationMCPServer {
   private server: Server;
-
-  constructor() {
+  private prescriptionService: PrescriptionService;
+  constructor(dbPath?: string) {
     this.server = new Server(
       {
         name: "medication-server",
@@ -30,6 +34,12 @@ export class MedicationMCPServer {
     this.setupResourceHandlers();
     this.setupToolHandlers();
     this.setupErrorHandling();
+
+    const db = dbPath
+      ? new sqlite.Database(dbPath)
+      : new sqlite.Database(":memory:");
+
+    this.prescriptionService = new PrescriptionService(db);
   }
 
   private setupErrorHandling(): void {
@@ -43,7 +53,48 @@ export class MedicationMCPServer {
     });
   }
 
-  private setupResourceHandlers(): void {}
+  private setupResourceHandlers(): void {
+    this.server.setRequestHandler(ListResourcesRequestSchema, async () => ({
+      resources: [
+        {
+          uri: `prescription://`,
+          name: `Gets all prescriptions for a user`,
+          mimeType: "application/json",
+          description:
+            "Gets all prescriptions for a user. However, since there is no User table and no concepts of users, this will just get * from the Prescriptions table. This will allow the LLM to understand the medications a user is taking.",
+        },
+      ],
+    }));
+
+    this.server.setRequestHandler(
+      ReadResourceRequestSchema,
+      async (request) => {
+        if (request.params.uri !== `prescription://`) {
+          throw new McpError(
+            ErrorCode.InvalidRequest,
+            `Unknown resource: ${request.params.uri}`
+          );
+        }
+        try {
+          const response = await this.prescriptionService.getPrescriptions();
+          return {
+            contents: [
+              {
+                uri: request.params.uri,
+                mimeType: "application/json",
+                text: JSON.stringify(response, null, 2),
+              },
+            ],
+          };
+        } catch (error) {
+          throw new McpError(
+            ErrorCode.InternalError,
+            `Error fetching prescriptions: ${error}`
+          );
+        }
+      }
+    );
+  }
 
   private setupToolHandlers(): void {
     this.server.setRequestHandler(ListToolsRequestSchema, async () => ({
@@ -133,5 +184,5 @@ export class MedicationMCPServer {
 }
 
 // Comment out, unless debugging with MCP Inspector Tool
-// const server = new MedicationMCPServer();
-// server.run().catch(console.error);
+const server = new MedicationMCPServer();
+server.run().catch(console.error);
