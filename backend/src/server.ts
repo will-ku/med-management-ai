@@ -9,10 +9,12 @@ main().catch((err) => console.error(err));
 
 async function main() {
   dotenv.config();
-
   initializeDatabase();
+  initializeApi();
   await initializeMCPClient();
+}
 
+function initializeApi() {
   const app = express();
   const port = process.env.PORT || 3000;
 
