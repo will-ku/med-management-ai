@@ -18,7 +18,7 @@ RUN rm -rf node_modules && \
 
 COPY . .
 
-RUN npm run build
+RUN rm -rf dist && npm run build
 
 EXPOSE 3000
 

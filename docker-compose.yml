@@ -18,7 +18,9 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./backend:/app
+      - ./backend/src:/app/src
+      - ./backend/package.json:/app/package.json
+      - ./backend/tsconfig.json:/app/tsconfig.json
       - /app/node_modules/
       - ./backend/data:/app/data
     environment:

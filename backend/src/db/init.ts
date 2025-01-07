@@ -1,5 +1,5 @@
 import sqlite3 from "sqlite3";
-import { MEDICATIONS_TO_SEED } from "./seed.js";
+import { MEDICATIONS_TO_SEED, PRESCRIPTIONS_TO_SEED } from "./seed.js";
 
 export const db = new sqlite3.Database("./data/med_management.db");
 
@@ -23,33 +23,65 @@ const CREATE_PRESCRIPTIONS_TABLE = `
   )
 `;
 
-export function initializeDatabase(): void {
-  db.serialize(() => {
-    createMedicationsTable();
-    createPrescriptionsTable();
+export function initializeDatabase(): Promise<void> {
+  console.log("Initializing database...");
+  return new Promise((resolve, reject) => {
+    db.serialize(() => {
+      try {
+        createMedicationsTable();
+        createPrescriptionsTable();
+        console.log("Database initialized successfully!");
+        resolve();
+      } catch (error) {
+        reject(error);
+      }
+    });
   });
 }
 
 function createMedicationsTable(): void {
   db.serialize(() => {
-    // Create the medications table
-    db.run(CREATE_MEDICATIONS_TABLE);
+    try {
+      // Create the medications table
+      db.run(CREATE_MEDICATIONS_TABLE);
 
-    // Seed the medications table
-    const query = db.prepare(
-      "INSERT INTO medications (name, dosage, frequency) VALUES (?, ?, ?)"
-    );
-    MEDICATIONS_TO_SEED.forEach(({ medName, dosage, frequency }) => {
-      query.run(medName, dosage, frequency);
-    });
+      // Seed the medications table
+      const query = db.prepare(
+        "INSERT INTO medications (name, dosage, frequency) VALUES (?, ?, ?)"
+      );
+      MEDICATIONS_TO_SEED.forEach(({ name, dosage, frequency }) => {
+        query.run(name, dosage, frequency);
+      });
 
-    // Finalize the query
-    query.finalize();
+      // Finalize the query
+      query.finalize();
+      console.log("Medications table created and seeded successfully!");
+    } catch (error) {
+      console.error("Error creating medications table:", error);
+      throw error;
+    }
   });
 }
 
 function createPrescriptionsTable(): void {
   db.serialize(() => {
-    db.run(CREATE_PRESCRIPTIONS_TABLE);
+    try {
+      // Create the prescriptions table
+      db.run(CREATE_PRESCRIPTIONS_TABLE);
+
+      // Seed the prescriptions table
+      const query = db.prepare(
+        "INSERT INTO prescriptions (medication_id, dosage, frequency) VALUES (?, ?, ?)"
+      );
+      PRESCRIPTIONS_TO_SEED.forEach(({ medicationId, dosage, frequency }) => {
+        query.run(medicationId, dosage, frequency);
+      });
+      // Finalize the query
+      query.finalize();
+      console.log("Prescriptions table created and seeded successfully!");
+    } catch (error) {
+      console.error("Error creating prescriptions table:", error);
+      throw error;
+    }
   });
 }

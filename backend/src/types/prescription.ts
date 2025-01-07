@@ -13,4 +13,7 @@ export const PrescriptionUpdateSchema = z.object({
 });
 
 export type Prescription = z.infer<typeof PrescriptionSchema>;
+export type PrescriptionWithMedication = Prescription & {
+  medicationName: string;
+};
 export type PrescriptionUpdate = z.infer<typeof PrescriptionUpdateSchema>;

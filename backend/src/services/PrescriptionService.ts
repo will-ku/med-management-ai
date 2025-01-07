@@ -1,5 +1,8 @@
 import { Database } from "sqlite3";
-import { Prescription, PrescriptionUpdate } from "../types/prescription.js";
+import {
+  PrescriptionUpdate,
+  PrescriptionWithMedication,
+} from "../types/prescription.js";
 
 export class PrescriptionService {
   private db: Database;
@@ -7,15 +10,23 @@ export class PrescriptionService {
     this.db = db;
   }
 
-  async getPrescriptions(): Promise<Prescription[]> {
+  async getPrescriptions(): Promise<PrescriptionWithMedication[]> {
+    console.log("=== Getting Prescriptions ===");
     return new Promise((resolve, reject) => {
       this.db.all(
         `SELECT 
-          p.*
-        FROM prescriptions p`,
+          p.*,
+          m.name as medicationName
+        FROM prescriptions p
+        LEFT JOIN medications m ON p.medication_id = m.id`,
         [],
-        (err: Error, rows: Prescription[]) => {
-          if (err) reject(err);
+        (err: Error | null, rows: PrescriptionWithMedication[]) => {
+          if (err) {
+            console.error("Database error:", err);
+            reject(err);
+            return;
+          }
+          console.log("Query results:", rows);
           resolve(rows);
         }
       );
