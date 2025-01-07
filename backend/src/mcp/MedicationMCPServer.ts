@@ -10,14 +10,16 @@ import {
   ListResourcesRequestSchema,
   ReadResourceRequestSchema,
 } from "@modelcontextprotocol/sdk/types.js";
-import sqlite from "sqlite3";
 import { TOOL } from "./constants.js";
 import { PrescriptionService } from "../services/PrescriptionService.js";
+import { db, initializeDatabase } from "../db/init.js";
 
 export class MedicationMCPServer {
   private server: Server;
   private prescriptionService: PrescriptionService;
-  constructor(dbPath?: string) {
+
+  constructor() {
+    console.log("=== MCP Server Initializing ===");
     this.server = new Server(
       {
         name: "medication-server",
@@ -31,14 +33,9 @@ export class MedicationMCPServer {
       }
     );
 
-    this.setupResourceHandlers();
-    this.setupToolHandlers();
     this.setupErrorHandling();
-
-    const db = dbPath
-      ? new sqlite.Database(dbPath)
-      : new sqlite.Database(":memory:");
-
+    this.setupToolHandlers();
+    this.setupResourceHandlers();
     this.prescriptionService = new PrescriptionService(db);
   }
 
@@ -78,7 +75,7 @@ export class MedicationMCPServer {
         try {
           const response = await this.prescriptionService.getPrescriptions();
           return {
-            contents: [
+            content: [
               {
                 uri: request.params.uri,
                 mimeType: "application/json",
@@ -147,14 +144,30 @@ export class MedicationMCPServer {
 
       switch (request.params.name) {
         case TOOL.GET_PRESCRIPTIONS:
-          return {
-            content: [
-              {
-                type: "text",
-                text: "get_prescriptions tool called",
-              },
-            ],
-          };
+          try {
+            const prescriptions =
+              await this.prescriptionService.getPrescriptions();
+            const prescriptionsStringified = prescriptions
+              .map(
+                (med) =>
+                  `${med.medicationName}: ${med.dosage}, ${med.frequency}`
+              )
+              .join("; ");
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: JSON.stringify(prescriptionsStringified, null, 2),
+                },
+              ],
+            };
+          } catch (error) {
+            console.error("Error in get_prescriptions:", error);
+            throw new McpError(
+              ErrorCode.InternalError,
+              `Error fetching prescriptions: ${error}`
+            );
+          }
         case TOOL.UPDATE_PRESCRIPTION:
           return {
             content: [
@@ -174,14 +187,22 @@ export class MedicationMCPServer {
   }
 
   async run(): Promise<void> {
-    const transport = new StdioServerTransport();
-    await this.server.connect(transport);
-
-    // Although this is just an informative message, we must log to stderr,
-    // to avoid interfering with MCP communication that happens on stdout
-    console.error("Medication MCP server running on stdio");
+    try {
+      const transport = new StdioServerTransport();
+      await this.server.connect(transport);
+      console.error("Medication MCP server running on stdio");
+    } catch (error) {
+      console.error("Failed to initialize MCP server:", error);
+      throw error;
+    }
   }
 }
 
 const server = new MedicationMCPServer();
-server.run().catch(console.error);
+server
+  .run()
+  .then((ok) => console.log(`MCP Server started successfully ${ok}`))
+  .catch((error) => {
+    console.error("Fatal error running MCP server:", error);
+    process.exit(1);
+  });
