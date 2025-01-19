@@ -12,7 +12,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { TOOL } from "./constants.js";
 import { PrescriptionService } from "../services/PrescriptionService.js";
-import { db, initializeDatabase } from "../db/init.js";
+import { db } from "../db/init.js";
 
 export class MedicationMCPServer {
   private server: Server;

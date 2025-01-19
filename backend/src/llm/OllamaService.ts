@@ -1,33 +1,62 @@
-import axios from "axios";
+import { Ollama, Tool, Message } from "ollama";
+import { MCPClient } from "../mcp/client.js";
+import { MessageHandler } from "../services/MessageHandler.js";
+import { CallToolResultSchema } from "@modelcontextprotocol/sdk/types.js";
 
 export class OllamaService {
-  private baseUrl: string;
+  private static instance: OllamaService;
+  private ollama: Ollama;
+  private mcpClient: MCPClient;
+  private messageHandler: MessageHandler;
 
-  constructor() {
-    this.baseUrl = process.env.OLLAMA_API_URL || "http://localhost:11434";
+  private constructor(
+    host: string = "http://host.docker.internal:11434",
+    mcpClient: MCPClient,
+    messageHandler: MessageHandler
+  ) {
+    this.ollama = new Ollama({ host });
+    this.mcpClient = mcpClient;
+    this.messageHandler = messageHandler;
   }
 
-  async generateSQLQuery(prompt: string): Promise<string> {
-    try {
-      const response = await axios.post(`${this.baseUrl}/api/generate`, {
-        model: "llama3.2",
-        prompt: `Convert this natural language query to SQL: ${prompt}
-                The database has a 'medications' table with columns:
-                - id (INTEGER PRIMARY KEY)
-                - name (TEXT)
-                - dosage (TEXT)
-                - frequency (TEXT)
-                - created_at (DATETIME)
-                Return only the SQL query without any explanation.`,
-        stream: false,
-      });
+  public static async getInstance(): Promise<OllamaService> {
+    if (!OllamaService.instance) {
+      const mcpClient = new MCPClient(
+        { command: "node", args: ["dist/mcp/MedicationMCPServer.js"] },
+        "medication-client"
+      );
+      await mcpClient.connect();
+      console.log("mcpClient connected");
 
-      console.log("Ollama response:", response.data);
+      const messageHandler = MessageHandler.getInstance();
 
-      return response.data.response.trim();
-    } catch (error) {
-      console.error("Full Ollama error:", error);
-      throw new Error(`Ollama Service Error: ${error}`);
+      OllamaService.instance = new OllamaService(
+        process.env.OLLAMA_HOST || "http://host.docker.internal:11434",
+        mcpClient,
+        messageHandler
+      );
     }
+    return OllamaService.instance;
+  }
+
+  async chat(messages: Message[], tools: Tool[]) {
+    const response = await this.ollama.chat({
+      model: process.env.ollamaModel ?? "llama3.2",
+      messages,
+      stream: false,
+      tools,
+    });
+    return response;
+  }
+
+  convertMcpToolsToOllamaTools(mcpTools: any[]): Tool[] {
+    return mcpTools.map((tool) => ({
+      type: "function",
+      function: {
+        name: tool.name,
+        description: tool.description ?? "",
+        parameters: tool.inputSchema,
+      },
+    }));
   }
 }
