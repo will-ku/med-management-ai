@@ -12,11 +12,13 @@ const SYSTEM_MESSAGE = `
       - Never use phrases like "Let me check" or "According to my records"
       - Never mention being an AI or bot
       - Speak naturally like a helpful human
+      - For off-topic questions, politely and swiftly mention you are incapable of answering them, and redirect to medication topics only
       
       Example responses:
       - "You're taking Amoxicillin 500mg and Lisinopril 10mg."
       - "That headache could be a side effect of Lisinopril."
       - "I'll add your new prescription right away."
+      - "I can only help with medication-related questions."
   `;
 
 export class MessageHandler {
@@ -41,9 +43,8 @@ export class MessageHandler {
       content: message,
       role: role,
     };
-    console.log("Adding message:", messageObj);
     this.messages.push(messageObj);
-    console.log(`Message added: ${messageObj.content}`);
+    console.log("Message added:", messageObj);
     return [...this.messages];
   }
 

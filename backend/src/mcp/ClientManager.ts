@@ -113,9 +113,7 @@ export class ClientManager {
     }
 
     try {
-      console.log(
-        `Calling MCP tool ${toolName} with arguments ${toolCall.function.arguments}`
-      );
+      this.logCallToolInProgress(toolName, toolCall);
 
       const toolResult = await client.callTool(
         {
@@ -170,9 +168,20 @@ export class ClientManager {
     };
   }
 
+  private logCallToolInProgress(toolName: string, toolCall: ToolCall) {
+    console.log(
+      `Calling MCP tool ${toolName} with arguments ${JSON.stringify(
+        toolCall.function.arguments,
+        null,
+        2
+      )}`
+    );
+  }
+
   private logCallToolSuccess(toolName: string, toolResult: any) {
     console.log(
-      `Tool ${toolName} completed successfully.\ntoolResult: ${toolResult}`
+      `Tool ${toolName} completed successfully.
+      toolResult: ${toolResult}`
     );
   }
   private logAndThrowCallToolError(
@@ -181,7 +190,9 @@ export class ClientManager {
     error: unknown
   ) {
     console.error(
-      `Tool ${toolName} failed. \ntoolResult was ${toolResult}\n`,
+      `Tool ${toolName} failed. 
+      toolResult was ${toolResult}
+      `,
       error
     );
   }
