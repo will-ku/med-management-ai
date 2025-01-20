@@ -1,19 +1,27 @@
 import express from "express";
 import { db } from "../db/init.js";
+import { PrescriptionService } from "../services/PrescriptionService.js";
+import { ClientManager } from "../mcp/ClientManager.js";
+import { OllamaService } from "../llm/OllamaService.js";
+import { messageRouter } from "./messageRoutes.js";
 
 export const apiRouter = express.Router();
-
-// Health Check
-apiRouter.get("/", async (req, res) => {
-  res.json({ hello: "world" });
-});
+apiRouter.use("/message", messageRouter);
 
 // Natural language query endpoint to LLM
 apiRouter.post("/query", async (req, res) => {
   try {
     const { query } = req.body;
-    res.json({ message: "Hello, world!" });
+
+    const clientManager = await ClientManager.getInstance();
+    const mcpTools = await clientManager.listTools();
+
+    const ollamaService = await OllamaService.getInstance();
+    const chatResponse = await ollamaService.handleChat(query, mcpTools);
+
+    res.json(chatResponse);
   } catch (error: unknown) {
+    console.error("Error occurred while processing query.", error);
     if (error instanceof Error) {
       res.status(500).json({ error: error.message }); // TODO: Handle error codes correctly
     } else {
@@ -46,23 +54,8 @@ apiRouter.get("/medication/:id", (req, res) => {
 
 // Prescription CRUD operations
 apiRouter.get("/prescription", (req, res) => {
-  db.all(
-    // Move this into a Controller
-    ` SELECT 
-      p.*,
-      m.name as medication_name,
-      m.dosage as medication_dosage,
-      m.frequency as medication_frequency
-    FROM prescriptions p
-    LEFT JOIN medications m ON p.medication_id = m.id
-  `,
-    [],
-    (err, rows) => {
-      if (err) {
-        res.status(500).json({ error: err.message }); // TODO: Handle error
-        return;
-      }
-      res.json(rows);
-    }
-  );
+  const prescriptionService = new PrescriptionService(db);
+  prescriptionService.getPrescriptions().then((prescriptions) => {
+    res.json(prescriptions);
+  });
 });
