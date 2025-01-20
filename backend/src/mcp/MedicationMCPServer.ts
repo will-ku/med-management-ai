@@ -99,7 +99,7 @@ export class MedicationMCPServer {
         {
           name: TOOL.GET_PRESCRIPTIONS,
           description:
-            "Gets all prescriptions for a user. However, since there is no User table and no concepts of users, this will just get * from the Prescriptions table",
+            "IMPORTANT: Use this tool whenever a user asks about their current medications, prescriptions, or what meds they are taking. This tool gets all current prescriptions for a user. No parameters needed.",
           inputSchema: {
             type: "object",
             properties: {},
@@ -108,7 +108,8 @@ export class MedicationMCPServer {
         },
         {
           name: TOOL.UPDATE_PRESCRIPTION,
-          description: "Updates a prescription for a user",
+          description:
+            "Updates a prescription for a user. Only use this tool to make changes to exist prescriptions.",
           inputSchema: {
             type: "object",
             properties: {
@@ -147,6 +148,9 @@ export class MedicationMCPServer {
           try {
             const prescriptions =
               await this.prescriptionService.getPrescriptions();
+
+            console.error("prescriptions", prescriptions);
+            console.error("prescriptions.length", prescriptions.length);
             const prescriptionsStringified = prescriptions
               .map(
                 (med) =>

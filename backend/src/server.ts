@@ -3,6 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import { apiRouter } from "./api/routes.js";
 import { initializeDatabase } from "./db/init.js";
+import { ClientManager } from "./mcp/ClientManager.js";
+import { MessageHandler } from "./services/MessageHandler.js";
 
 main().catch((err) => console.error(err));
 
@@ -10,6 +12,8 @@ async function main() {
   dotenv.config();
   await initializeDatabase();
   initializeApi();
+  MessageHandler.getInstance();
+  await ClientManager.getInstance();
 }
 
 function initializeApi() {
