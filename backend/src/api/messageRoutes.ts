@@ -12,5 +12,15 @@ messageRouter.delete("/", (req, res) => {
 messageRouter.get("/", (req, res) => {
   const messageHandler = MessageHandler.getInstance();
   const messages = messageHandler.getMessages();
+  const filteredMessages = messages.filter(
+    (message) => message.role === "user" || message.role === "assistant"
+  );
+
+  res.json(filteredMessages);
+});
+
+messageRouter.get("/admin", (req, res) => {
+  const messageHandler = MessageHandler.getInstance();
+  const messages = messageHandler.getMessages();
   res.json(messages);
 });
