@@ -13,6 +13,7 @@ import {
 import { TOOL } from "./constants.js";
 import { PrescriptionService } from "../services/PrescriptionService.js";
 import { db } from "../db/init.js";
+import { isValidDeletePrescriptionArgs } from "../types/prescription.js";
 
 export class MedicationMCPServer {
   private server: Server;
@@ -99,7 +100,7 @@ export class MedicationMCPServer {
         {
           name: TOOL.GET_PRESCRIPTIONS,
           description:
-            "IMPORTANT: Use this tool whenever a user asks about their current medications, prescriptions, or what meds they are taking. This tool gets all current prescriptions for a user. No parameters needed.",
+            "Lists all current medications a patient is taking. Use this tool first before making any changes to verify current prescriptions. Returns medication names, dosages, and frequencies in an easy-to-read format. Always use this tool when: 1) Patient asks about their medications 2) Before updating/deleting to verify details 3) To get prescription IDs needed for other operations.",
           inputSchema: {
             type: "object",
             properties: {},
@@ -109,24 +110,43 @@ export class MedicationMCPServer {
         {
           name: TOOL.UPDATE_PRESCRIPTION,
           description:
-            "Updates a prescription for a user. Only use this tool to make changes to exist prescriptions.",
+            "Updates dosage or frequency for an existing medication. REQUIREMENTS: 1) Must have prescription ID (get it from get_prescriptions first) 2) Can only modify existing prescriptions 3) Cannot add new medications or delete existing ones. If patient wants to stop a medication, use delete_prescription instead.",
           inputSchema: {
             type: "object",
             properties: {
-              prescriptionId: {
+              id: {
                 type: "number",
-                description: "The ID of the prescription to update.",
+                description:
+                  "The ID of the prescription to update (required, get this from get_prescriptions first).",
               },
               frequency: {
                 type: "string",
-                description: "The frequency of the prescription.",
+                description:
+                  "How often to take the medication (e.g., 'twice daily', 'every morning').",
               },
               dosage: {
                 type: "string",
-                description: "The dosage of the prescription.",
+                description:
+                  "Amount of medication to take (e.g., '10mg', '2 tablets').",
               },
             },
-            required: ["prescriptionId"],
+            required: ["id"],
+          },
+        },
+        {
+          name: TOOL.DELETE_PRESCRIPTION,
+          description:
+            "Removes a medication from patient's current list. CRITICAL: Only use when patient explicitly states they stopped taking a specific medication. REQUIRED STEPS: 1) Always use get_prescriptions first to confirm medication details 2) Verify with patient before deleting 3) Must have correct prescription ID. Never guess the ID.",
+          inputSchema: {
+            type: "object",
+            properties: {
+              id: {
+                type: "number",
+                description:
+                  "The ID of the prescription to delete (required, get this from get_prescriptions first).",
+              },
+            },
+            required: ["id"],
           },
         },
       ],
@@ -135,7 +155,8 @@ export class MedicationMCPServer {
     this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
       if (
         request.params.name !== TOOL.GET_PRESCRIPTIONS &&
-        request.params.name !== TOOL.UPDATE_PRESCRIPTION
+        request.params.name !== TOOL.UPDATE_PRESCRIPTION &&
+        request.params.name !== TOOL.DELETE_PRESCRIPTION
       ) {
         throw new McpError(
           ErrorCode.InvalidParams,
@@ -181,6 +202,37 @@ export class MedicationMCPServer {
               },
             ],
           };
+        case TOOL.DELETE_PRESCRIPTION:
+          console.error(
+            "Delete prescription arguments:",
+            request.params.arguments
+          );
+          try {
+            if (!isValidDeletePrescriptionArgs(request.params.arguments)) {
+              throw new McpError(
+                ErrorCode.InvalidParams,
+                "Invalid delete_prescription arguments"
+              );
+            }
+            const { id } = request.params.arguments;
+            await this.prescriptionService.deletePrescription(id);
+
+            return {
+              content: [
+                {
+                  type: "text",
+                  text: `delete_prescription tool deleted prescription ID ${id}`,
+                },
+              ],
+            };
+          } catch (error) {
+            console.error("Error in delete_prescription:", error);
+            throw new McpError(
+              ErrorCode.InternalError,
+              `Error deleting prescription: ${error}`
+            );
+          }
+
         default:
           throw new McpError(
             ErrorCode.InvalidParams,

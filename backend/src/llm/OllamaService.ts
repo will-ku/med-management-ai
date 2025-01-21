@@ -45,13 +45,19 @@ export class OllamaService {
     const messages = this.messageHandler.addMessage(query, "user");
     const ollamaTools = this.convertMcpToolsToOllamaTools(mcpTools);
 
-    console.log("Converted Ollama tools:", ollamaTools);
+    console.log(
+      "Converted Ollama tools:",
+      ollamaTools.map((o) => JSON.stringify(o, null, 2))
+    );
 
     const chatResponse = await this.chat(messages, ollamaTools);
     console.log("Raw chat response:", JSON.stringify(chatResponse, null, 2));
 
     const [hasToolCalls, toolCalls] = this.getToolCalls(chatResponse);
-    console.log("Tool calls detected:", { hasToolCalls, toolCalls });
+    console.log(
+      "Tool calls detected:",
+      JSON.stringify({ hasToolCalls, toolCalls }, null, 2)
+    );
 
     if (hasToolCalls) {
       const clientManager = await ClientManager.getInstance();
@@ -67,8 +73,25 @@ export class OllamaService {
           toolResults.push(toolCallResponse);
         } catch (e: unknown) {
           console.error(
-            `Error calling tool inside of handleChat: ${toolCall.function.name}`
+            `Error calling tool ${toolCall.function.name} inside of handleChat: ${e}`
           );
+
+          const errorMessageContent = this.createErrorMessageContent(
+            toolCall,
+            e
+          );
+
+          const errorMessage = this.messageHandler.addMessage(
+            errorMessageContent,
+            "tool"
+          );
+
+          const errorResponse = await this.chat(errorMessage, ollamaTools);
+          this.messageHandler.addMessage(
+            errorResponse.message.content,
+            "assistant"
+          );
+          return errorResponse;
         }
       }
 
@@ -88,21 +111,6 @@ export class OllamaService {
       return chatResponse;
     }
   }
-
-  // private async handleToolCalls(
-  //   toolCalls: ToolCall[],
-  //   clientManager: ClientManager
-  // ): Promise<ChatResponse> {
-  //   const toolResults = [];
-  //   for (const toolCall of toolCalls) {
-  //     const toolCallResponse = await this.handleToolCall(
-  //       toolCall,
-  //       clientManager
-  //     );
-  //     toolResults.push(toolCallResponse);
-  //   }
-  //   return toolResults;
-  // }
 
   private async handleToolCall(
     toolCall: ToolCall,
@@ -128,7 +136,11 @@ export class OllamaService {
       return chatResponseWithToolCall;
     } catch (e: unknown) {
       console.error(`Error calling tool: ${toolCall.function.name}`);
-      throw e;
+      throw new Error(
+        `Failed to execute ${toolCall.function.name}: ${
+          e instanceof Error ? e.message : "Unknown error occurred"
+        }`
+      );
     }
   }
 
@@ -150,19 +162,23 @@ export class OllamaService {
     })) as Tool[];
   };
 
-  // convertMcpToolsToOllamaTools(mcpTools: MCPTool[]): Tool[] {
-  //   if (mcpTools.length) {
-  //     const ok = mcpTools[0].name;
-  //     const okok = mcpTools[0].description;
-  //     const okokok = mcpTools[0].inputSchema;
-  //   }
-  //   return mcpTools.map((tool) => ({
-  //     type: "function",
-  //     function: {
-  //       name: tool.name,
-  //       description: tool.description ?? "",
-  //       parameters: tool.inputSchema,
-  //     },
-  //   }));
-  // }
+  private createErrorMessageContent(toolCall: ToolCall, e: unknown): string {
+    const content = `TOOL_EXECUTION_FAILED: The operation could not be completed.
+              Tool: ${toolCall.function.name}
+              Error: ${
+                e instanceof Error ? e.message : "Unknown error occurred"
+              }
+
+              IMPORTANT:
+              - Be concise. Keep responses under three sentences.
+              - The user is not technical and does not want to debug. Keep responses simple and human-friendly.
+              - Do not make assumptions about the current state.
+              - Do not pretend the operation succeeded.
+              - Do not ask the user to try again or ask follow up questions.
+              
+              REQUIRED RESPONSE FORMAT:
+              1. Acknowledge the error occurred
+              2. Explain what went wrong in user-friendly terms`;
+    return content;
+  }
 }
