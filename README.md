@@ -2,7 +2,7 @@
 
 A proof-of-concept full-stack application integrating LLMs with Anthropic’s Model Context Protocol (MCP). This project showcases how natural language interfaces and structured tool interactions can be leveraged for managing medication lists via AI agents.
 
-Most importantly, this project serves as a hands-on exploration of emerging AI protocols and architectures, paving the way for more interactive and dynamic AI-enabled applications.
+Most importantly, this project serves as a hands-on exploration of emerging AI protocols and architectures, enabling users to interact with their data without relying on traditional forms.
 
 ## Overview
 
@@ -17,10 +17,10 @@ The application demonstrates how LLMs can interact with backend services seamles
 ## Architecture
 
 ```
-┌─────────────────┐      ┌───────────────────┐       ┌──────────────────┐
-│      React      │      │       Express     │       │      Ollama      │
-│    Frontend     │──────▶      Backend      │──────▶│    (LLM Agent)   │
-└─────────────────┘      └───────────────────┘       └──────────────────┘
+┌─────────────────┐       ┌───────────────────┐       ┌──────────────────┐
+│      React      │       │      Express      │       │      Ollama      │
+│    Frontend     │──────▶│      Backend      │──────▶│    (LLM Agent)   │
+└─────────────────┘       └───────────────────┘       └──────────────────┘
                                     │                           │
                                     │                           │
                                     ▼                           │
@@ -37,26 +37,22 @@ The application demonstrates how LLMs can interact with backend services seamles
 
 ```
 
-The prototype demonstrates a pattern where:
-
-Key Concepts:
+**Key Concepts:**
 
 1. Natural Language Queries: Users interact through the frontend by submitting natural language inputs.
 2. LLM as Middleware: Ollama interprets queries, interacts with MCP tools, and routes commands to backend services.
-3. MCP Tooling: Backend integrations leverage MCP tool calls for:
+3. MCP Tooling: Backend integrations (host-client-server architecture) leverage MCP tool calls for basic CRUD operations:
 
 - Retrieving prescription data
 - Updating medication details
 - Deleting prescriptions
 
-4. Resources & Context: MCP ensures tools operate within structured contexts for better traceability and modularity.
+## Demo
 
-## Current Features
+- Natural language interface for retrieving and deleting prescriptions from SQLite database.
+- Guardrails to ensure conversations stay on topic.
 
-- Basic natural language interface for medication list management
-- MCP Tooling - Implementation of a host-client-server architecture, of structured tool calls via the MCP protocol
-- Local LLM integration via Ollama
-- Simple medication CRUD operations
+https://github.com/user-attachments/assets/94387c22-6055-4d61-95ff-8280546a2ef7
 
 ## Getting Started
 
@@ -78,7 +74,7 @@ cd med-management-ai
 2. Start the application using Docker Compose:
 
 ```bash
-docker-compose up --build
+docker compose up --build
 ```
 
 The development servers will be available at:
@@ -96,3 +92,4 @@ The development servers will be available at:
 ## Known Issues
 
 - Bug: LLM struggles with prescription updates/deletes due to missing [MCP resources](https://modelcontextprotocol.io/docs/concepts/resources) implementation
+- WIP: Create new prescription using chat
