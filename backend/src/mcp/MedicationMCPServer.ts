@@ -215,13 +215,13 @@ export class MedicationMCPServer {
               );
             }
             const { id } = request.params.arguments;
-            await this.prescriptionService.deletePrescription(id);
+            await this.prescriptionService.deletePrescription(Number(id));
 
             return {
               content: [
                 {
                   type: "text",
-                  text: `delete_prescription tool deleted prescription ID ${id}`,
+                  text: `Success! The delete_prescription tool deleted prescription ID ${id}. This prescription/medication was successfully removed from the patient's medication list.`,
                 },
               ],
             };

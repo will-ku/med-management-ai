@@ -35,7 +35,7 @@ export class OllamaService {
   public async handleChat(
     query: string,
     mcpTools: MCPTool[]
-  ): Promise<ChatResponse> {
+  ): Promise<ChatResponse & { wasToolCalled: boolean }> {
     console.log("Starting handleChat with query:", query);
     console.log(
       "Available MCP tools:",
@@ -91,7 +91,7 @@ export class OllamaService {
             errorResponse.message.content,
             "assistant"
           );
-          return errorResponse;
+          return { ...errorResponse, wasToolCalled: false };
         }
       }
 
@@ -105,10 +105,10 @@ export class OllamaService {
         finalResponse.message.content,
         "assistant"
       );
-      return finalResponse;
+      return { ...finalResponse, wasToolCalled: true };
     } else {
       this.messageHandler.addMessage(chatResponse.message.content, "assistant");
-      return chatResponse;
+      return { ...chatResponse, wasToolCalled: false };
     }
   }
 
@@ -118,19 +118,19 @@ export class OllamaService {
   ): Promise<ChatResponse> {
     try {
       console.log(
-        `Calling encoded tool ${toolCall.function.name} with args: ${toolCall.function.arguments}.
-        - - - - - - - - - - - - - - - 
-        Detailed logs:`,
-        JSON.stringify(toolCall, null, 2)
+        `Calling encoded tool ${toolCall.function.name} with args: ${toolCall.function.arguments}.`
       );
 
       const toolContent = await clientManager.callTool(toolCall);
-
       console.log("toolContent", toolContent);
-      const messages = this.messageHandler.addMessage(
-        JSON.stringify(toolContent),
-        "tool"
-      );
+
+      // Extract the human-readable message from the tool response
+      const readableMessage =
+        toolContent.type === "text"
+          ? toolContent.text
+          : JSON.stringify(toolContent);
+
+      const messages = this.messageHandler.addMessage(readableMessage, "tool");
 
       const chatResponseWithToolCall = await this.chat(messages, []); // TODO: Should we pass the tools here? Probably not needed.
       return chatResponseWithToolCall;

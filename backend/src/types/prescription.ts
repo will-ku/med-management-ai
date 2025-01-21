@@ -37,6 +37,6 @@ export function isValidDeletePrescriptionArgs(
     typeof args === "object" &&
     args !== null &&
     "id" in args &&
-    typeof args.id === "number"
+    (typeof args.id === "number" || typeof args.id === "string")
   );
 }
