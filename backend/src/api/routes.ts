@@ -4,6 +4,7 @@ import { PrescriptionService } from "../services/PrescriptionService.js";
 import { ClientManager } from "../mcp/ClientManager.js";
 import { OllamaService } from "../llm/OllamaService.js";
 import { messageRouter } from "./messageRoutes.js";
+import { RecordNotFoundError } from "../services/Errors.js";
 
 export const apiRouter = express.Router();
 apiRouter.use("/message", messageRouter);
@@ -58,4 +59,55 @@ apiRouter.get("/prescription", (req, res) => {
   prescriptionService.getPrescriptions().then((prescriptions) => {
     res.json(prescriptions);
   });
+});
+
+apiRouter.post("/prescription", async (req, res) => {
+  const { medicationId, dosage, frequency } = req.body;
+  const prescriptionService = new PrescriptionService(db);
+  try {
+    const newPrescription = await prescriptionService.createPrescription({
+      medicationId,
+      dosage,
+      frequency,
+    });
+    res.json(newPrescription);
+  } catch (error: unknown) {
+    res.status(500).json({ error: "An unknown error occurred" });
+  }
+});
+
+apiRouter.patch("/prescription/:id", async (req, res) => {
+  const { id } = req.params;
+  const { dosage, frequency } = req.body;
+  const prescriptionService = new PrescriptionService(db);
+
+  try {
+    const updatedPrescription = await prescriptionService.updatePrescription({
+      id: Number(id),
+      dosage,
+      frequency,
+    });
+    res.json({ ...updatedPrescription });
+  } catch (error: unknown) {
+    if (error instanceof RecordNotFoundError) {
+      res.status(404).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: "An unknown error occurred" });
+    }
+  }
+});
+
+apiRouter.delete("/prescription/:id", (req, res) => {
+  const { id } = req.params;
+  const prescriptionService = new PrescriptionService(db);
+  try {
+    prescriptionService.deletePrescription(Number(id));
+    res.json({ success: true });
+  } catch (error: unknown) {
+    if (error instanceof RecordNotFoundError) {
+      res.status(404).json({ error: error.message });
+    } else {
+      res.status(500).json({ error: "An unknown error occurred" });
+    }
+  }
 });

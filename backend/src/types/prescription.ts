@@ -7,7 +7,7 @@ export const PrescriptionSchema = z.object({
 });
 
 export const PrescriptionUpdateSchema = z.object({
-  medicationId: z.number(),
+  id: z.number(),
   dosage: z.string().optional(),
   frequency: z.string().optional(),
 });
@@ -17,3 +17,26 @@ export type PrescriptionWithMedication = Prescription & {
   medicationName: string;
 };
 export type PrescriptionUpdate = z.infer<typeof PrescriptionUpdateSchema>;
+
+// MCP Server Args
+export interface DeletePrescriptionArgs {
+  id: number;
+}
+
+export interface UpdatePrescriptionArgs {
+  id: number;
+  dosage?: string;
+  frequency?: string;
+}
+
+// Type guards
+export function isValidDeletePrescriptionArgs(
+  args: any
+): args is DeletePrescriptionArgs {
+  return (
+    typeof args === "object" &&
+    args !== null &&
+    "id" in args &&
+    typeof args.id === "number"
+  );
+}

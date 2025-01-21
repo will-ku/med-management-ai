@@ -10,7 +10,6 @@ messageRouter.delete("/", (req, res) => {
 });
 
 messageRouter.get("/", (req, res) => {
-  console.log("Getting all messages from messageHandler");
   const messageHandler = MessageHandler.getInstance();
   const messages = messageHandler.getMessages();
   res.json(messages);
