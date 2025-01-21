@@ -1,21 +1,16 @@
-# AI-Powered Medication Management System (POC)
+# AI-Enabled Medication Management System
 
-A proof-of-concept application exploring the integration of LLMs and Anthropic's Model Context Protocol (MCP). This project demonstrates how natural language interfaces could potentially manage medication lists through AI agents and structured tool calls.
+A proof-of-concept full-stack application exploring the integration of LLMs and Anthropic's Model Context Protocol (MCP). This project demonstrates how natural language interfaces could potentially manage medication lists through AI agents and structured tool calls.
+
+Most of all, this project is a learning exercise to experiment with how to integrate LLMs with backend services and explore architectual patterns for AI-enabled applications.
 
 ## Overview
 
 This experimental project explores several emerging technologies in the AI/LLM space:
 
-- Anthropic's Model Context Protocol (MCP) for structured AI tool usage
-- Local LLM deployment with Ollama
-- Integration of AI agents with traditional backend services
-- Natural language processing for healthcare-related tasks
-
-The goal is to demonstrate and learn from:
-
-- How MCP can provide structured interaction between LLMs and backend services
-- Local LLM deployment patterns and challenges
-- Architectural approaches for AI-augmented applications
+- Anthropic's Model Context Protocol (MCP) for structured tool interactions
+- Local LLM deployment and integration via Ollama
+- Natural language processing for medication management (though the pattern can extend to any domain)
 
 ## Architecture
 
@@ -97,4 +92,4 @@ The development servers will be available at:
 
 ## Known Issues
 
-- Bug: Need to provide [resources](https://modelcontextprotocol.io/docs/concepts/resources) to MCP ClientManager, so it can be provided to the LLM as context. Without it, the LLM cannot reliably get the appropriate arguments to delete or update prescriptions.
+- Bug: LLM struggles with prescription updates/deletes due to missing [MCP resources](https://modelcontextprotocol.io/docs/concepts/resources) implementation
