@@ -1,16 +1,18 @@
 # AI-Enabled Medication Management System
 
-A proof-of-concept full-stack application exploring the integration of LLMs and Anthropic's Model Context Protocol (MCP). This project demonstrates how natural language interfaces could potentially manage medication lists through AI agents and structured tool calls.
+A proof-of-concept full-stack application integrating LLMs with Anthropic’s Model Context Protocol (MCP). This project showcases how natural language interfaces and structured tool interactions can be leveraged for managing medication lists via AI agents.
 
-Most of all, this project is a learning exercise to experiment with how to integrate LLMs with backend services and explore architectual patterns for AI-enabled applications.
+Most importantly, this project serves as a hands-on exploration of emerging AI protocols and architectures, paving the way for more interactive and dynamic AI-enabled applications.
 
 ## Overview
 
-This experimental project explores several emerging technologies in the AI/LLM space:
+This experimental project highlights cutting-edge advancements in AI and LLM integration:
 
-- Anthropic's Model Context Protocol (MCP) for structured tool interactions
-- Local LLM deployment and integration via Ollama
-- Natural language processing for medication management (though the pattern can extend to any domain)
+- Model Context Protocol (MCP) for structured, traceable, and extensible tool interactions
+- Local LLM deployment through Ollama, leveraging the open-source Llama 3.2 model
+- Natural language processing for practical, domain-specific use cases (medication management)
+
+The application demonstrates how LLMs can interact with backend services seamlessly, using MCP to bridge natural language understanding and tool execution.
 
 ## Architecture
 
@@ -37,23 +39,24 @@ This experimental project explores several emerging technologies in the AI/LLM s
 
 The prototype demonstrates a pattern where:
 
-1. Frontend sends natural language queries to Express backend
-2. Backend forwards these queries to Ollama LLM Agent
-3. Ollama processes queries and uses MCP tools when needed to:
-   - Get current prescriptions
-   - Update medication details
-   - Delete prescriptions
-4. MCP Server handles tool calls by executing database operations
-5. Results flow back through the chain to the frontend
+Key Concepts:
 
-This experimental architecture shows how LLMs could potentially interact with backend services in a structured way through the MCP protocol.
+1. Natural Language Queries: Users interact through the frontend by submitting natural language inputs.
+2. LLM as Middleware: Ollama interprets queries, interacts with MCP tools, and routes commands to backend services.
+3. MCP Tooling: Backend integrations leverage MCP tool calls for:
+
+- Retrieving prescription data
+- Updating medication details
+- Deleting prescriptions
+
+4. Resources & Context: MCP ensures tools operate within structured contexts for better traceability and modularity.
 
 ## Current Features
 
 - Basic natural language interface for medication list management
-- Proof-of-concept implementation of MCP tool calls
-- Simple medication CRUD operations
+- MCP Tooling - Implementation of a host-client-server architecture, of structured tool calls via the MCP protocol
 - Local LLM integration via Ollama
+- Simple medication CRUD operations
 
 ## Getting Started
 
@@ -86,9 +89,9 @@ The development servers will be available at:
 
 ## Technologies Explored
 
-- [Anthropic's Model Context Protocol](https://modelcontextprotocol.io/introduction) - For structured LLM tool usage
-- [Ollama](https://ollama.ai/) - Local LLM deployment
-- [Llama](https://ai.meta.com/llama/) - Open source LLM model
+- [Anthropic's Model Context Protocol](https://modelcontextprotocol.io/introduction) - Modern protocl for structured tool usage with LLMs
+- [Ollama](https://ollama.ai/) - Local LLM deployment for private processing
+- [Llama](https://ai.meta.com/llama/) - Meta's open source LLM model
 
 ## Known Issues
 
