@@ -13,7 +13,7 @@ export class PrescriptionService {
   }
 
   async getPrescriptions(): Promise<PrescriptionWithMedication[]> {
-    console.log("=== Getting Prescriptions ===");
+    // console.log("=== Getting Prescriptions ===");
     return new Promise((resolve, reject) => {
       this.db.all(
         `SELECT 
@@ -28,7 +28,7 @@ export class PrescriptionService {
             reject(err);
             return;
           }
-          console.log("Query results:", rows);
+          // console.log("Query results:", rows);
           resolve(rows);
         }
       );

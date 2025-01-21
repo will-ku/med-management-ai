@@ -1,23 +1,19 @@
 import {
-  Grid2,
+  Box,
   Card,
   CardContent,
   Typography,
   IconButton,
+  Stack,
+  Chip,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import { useState } from "react";
-import EditMedicationDialog from "./EditPrescriptionDialog.js";
+import EditPrescriptionDialog from "./EditPrescriptionDialog.js";
 import { usePrescriptions } from "../contexts/PrescriptionContext.js";
+import { Prescription } from "../types/prescription";
 
-interface Prescription {
-  id: number;
-  medicationName: string;
-  dosage: string;
-  frequency: string;
-}
-
-export default function MedicationList() {
+export default function PrescriptionList() {
   const [selectedPrescription, setSelectedPrescription] =
     useState<Prescription | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -29,80 +25,87 @@ export default function MedicationList() {
   };
 
   return (
-    <>
+    <Box sx={{ width: "100%", p: { xs: 2, sm: 3 } }}>
       <Typography variant="h4" gutterBottom sx={{ mb: 4 }}>
         My Medications
       </Typography>
 
-      <Grid2 container spacing={3}>
+      <Stack spacing={2}>
         {prescriptions.map((prescription) => (
-          <Grid2 component="div" key={prescription.id}>
-            <Card
+          <Card
+            key={prescription.id}
+            sx={{
+              width: "100%",
+              transition: "all 0.2s ease-in-out",
+              "&:hover": {
+                transform: "translateY(-2px)",
+                boxShadow: (theme) => theme.shadows[4],
+              },
+            }}
+          >
+            <CardContent
               sx={{
-                height: "100%",
-                width: "100%",
                 display: "flex",
-                flexDirection: "column",
-                position: "relative",
-                minHeight: "180px",
-                minWidth: "200px",
-                "&:hover": {
-                  boxShadow: 3,
-                  transition: "all 0.2s ease-in-out",
-                },
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                p: { xs: 2, sm: 3 },
               }}
             >
-              <IconButton
-                sx={{
-                  position: "absolute",
-                  right: 8,
-                  top: 8,
-                  "&:hover": {
-                    backgroundColor: "rgba(0, 0, 0, 0.04)",
-                  },
-                }}
-                onClick={() => handleEdit(prescription)}
-              >
-                <EditIcon />
-              </IconButton>
-
-              <CardContent
-                sx={{
-                  flexGrow: 1,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 1,
-                  pt: 4,
-                }}
-              >
-                <Typography variant="h6" gutterBottom>
-                  {prescription.medicationName}
-                </Typography>
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    mb: 1,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    component="div"
+                    sx={{ wordBreak: "break-word" }}
+                  >
+                    {prescription.medicationName}
+                  </Typography>
+                  <Chip
+                    label={prescription.frequency}
+                    size="small"
+                    color="primary"
+                    sx={{ borderRadius: 1 }}
+                  />
+                </Box>
                 <Typography
                   variant="body1"
                   color="text.secondary"
-                  sx={{ fontWeight: 500 }}
+                  sx={{ mb: 1 }}
                 >
                   Dosage: {prescription.dosage}
                 </Typography>
-                <Typography
-                  variant="body1"
-                  color="text.secondary"
-                  sx={{ fontWeight: 500 }}
-                >
-                  Frequency: {prescription.frequency}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid2>
-        ))}
-      </Grid2>
+              </Box>
 
-      <EditMedicationDialog
+              <IconButton
+                size="small"
+                onClick={() => handleEdit(prescription)}
+                sx={{
+                  ml: 1,
+                  "&:hover": {
+                    backgroundColor: "action.hover",
+                  },
+                }}
+              >
+                <EditIcon />
+              </IconButton>
+            </CardContent>
+          </Card>
+        ))}
+      </Stack>
+
+      <EditPrescriptionDialog
         open={editDialogOpen}
         onClose={() => setEditDialogOpen(false)}
         prescription={selectedPrescription}
       />
-    </>
+    </Box>
   );
 }

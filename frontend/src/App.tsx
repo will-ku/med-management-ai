@@ -1,8 +1,6 @@
-import { useState } from "react";
 import {
   Box,
   CssBaseline,
-  Drawer,
   Paper,
   ThemeProvider,
   createTheme,
@@ -31,8 +29,6 @@ const theme = createTheme({
 const DRAWER_WIDTH = 400;
 
 function App() {
-  const [open, setOpen] = useState(true);
-
   return (
     <PrescriptionProvider>
       <ThemeProvider theme={theme}>
@@ -59,22 +55,21 @@ function App() {
             </Paper>
           </Box>
 
-          {/* Chat drawer */}
-          <Drawer
-            variant="permanent"
-            anchor="right"
-            open={open}
+          {/* Fixed chat interface */}
+          <Box
             sx={{
               width: DRAWER_WIDTH,
-              flexShrink: 0,
-              "& .MuiDrawer-paper": {
-                width: DRAWER_WIDTH,
-                boxSizing: "border-box",
-              },
+              position: "fixed",
+              right: 0,
+              top: 0,
+              height: "100vh",
+              borderLeft: 1,
+              borderColor: "divider",
+              bgcolor: "background.paper",
             }}
           >
             <ChatInterface />
-          </Drawer>
+          </Box>
         </Box>
       </ThemeProvider>
     </PrescriptionProvider>
