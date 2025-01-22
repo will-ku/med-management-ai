@@ -11,6 +11,10 @@ RUN apt-get update && apt-get install -y \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
+# Create data directory and set permissions
+RUN mkdir -p /app/data && \
+    chown -R node:node /app
+
 RUN rm -rf node_modules && \
     npm cache clean --force && \
     npm ci && \
@@ -19,6 +23,9 @@ RUN rm -rf node_modules && \
 COPY . .
 
 RUN rm -rf dist && npm run build
+
+# Set user to node
+USER node
 
 EXPOSE 3000
 

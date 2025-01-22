@@ -1,7 +1,13 @@
 import sqlite3 from "sqlite3";
 import { MEDICATIONS_TO_SEED, PRESCRIPTIONS_TO_SEED } from "./seed.js";
 
-export const db = new sqlite3.Database("./data/med_management.db");
+export const db = new sqlite3.Database("./data/med_management.db", (err) => {
+  if (err) {
+    console.error("Error opening database:", err);
+  } else {
+    console.log("Database connected successfully");
+  }
+});
 
 const CREATE_MEDICATIONS_TABLE = `
   CREATE TABLE IF NOT EXISTS medications (
@@ -29,13 +35,31 @@ export function initializeDatabase(): Promise<void> {
   return new Promise((resolve, reject) => {
     db.serialize(() => {
       try {
-        // Clear existing data first
-        db.run("DELETE FROM prescriptions");
-        db.run("DELETE FROM medications");
+        // Create tables first
+        db.run(CREATE_MEDICATIONS_TABLE);
+        db.run(CREATE_PRESCRIPTIONS_TABLE);
 
-        // Reset the autoincrement counters
+        // Clear existing data
+        db.run("DELETE FROM prescriptions", (err) => {
+          if (err && !err.message.includes("no such table")) {
+            console.error("Error clearing prescriptions:", err);
+          }
+        });
+
+        db.run("DELETE FROM medications", (err) => {
+          if (err && !err.message.includes("no such table")) {
+            console.error("Error clearing medications:", err);
+          }
+        });
+
+        // Reset autoincrement
         db.run(
-          "DELETE FROM sqlite_sequence WHERE name='medications' OR name='prescriptions'"
+          "DELETE FROM sqlite_sequence WHERE name='medications' OR name='prescriptions'",
+          (err) => {
+            if (err && !err.message.includes("no such table")) {
+              console.error("Error resetting sequences:", err);
+            }
+          }
         );
 
         createMedicationsTable();
@@ -43,6 +67,7 @@ export function initializeDatabase(): Promise<void> {
         console.log("Database initialized successfully!");
         resolve();
       } catch (error) {
+        console.error("Database initialization error:", error);
         reject(error);
       }
     });

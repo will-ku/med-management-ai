@@ -22,11 +22,12 @@ services:
       - ./backend/package.json:/app/package.json
       - ./backend/tsconfig.json:/app/tsconfig.json
       - /app/node_modules/
-      - ./backend/data:/app/data
+      - backend_data:/app/data
     environment:
       - NODE_ENV=development
       - PORT=3000
       - OLLAMA_API_URL=http://ollama:11434
+    user: "node"
     depends_on:
       - ollama
     extra_hosts:
