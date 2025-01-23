@@ -1,11 +1,15 @@
 import sqlite3 from "sqlite3";
+import fs from "fs";
+import path from "path";
 import { MEDICATIONS_TO_SEED, PRESCRIPTIONS_TO_SEED } from "./seed.js";
 
-export const db = new sqlite3.Database("./data/med_management.db", (err) => {
+export const DB_PATH = "/app/data/med_management.db";
+
+export const db = new sqlite3.Database(DB_PATH, (err) => {
   if (err) {
     console.error("Error opening database:", err);
   } else {
-    console.log("Database connected successfully");
+    console.log("Database connection established");
   }
 });
 
@@ -30,8 +34,18 @@ const CREATE_PRESCRIPTIONS_TABLE = `
   )
 `;
 
-export function initializeDatabase(): Promise<void> {
+export async function initializeDatabase(): Promise<void> {
   console.log("Initializing database...");
+
+  // Ensure the database directory exists
+  fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+
+  // Touch the database file if it doesn't exist
+  if (!fs.existsSync(DB_PATH)) {
+    fs.writeFileSync(DB_PATH, "");
+    console.log("Created new database file");
+  }
+
   return new Promise((resolve, reject) => {
     db.serialize(() => {
       try {
